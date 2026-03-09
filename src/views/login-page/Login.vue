@@ -1,5 +1,5 @@
 <template>
-    <div v-loading="loading" class="w-full h-[100vh] overflow-hidden flex items-center justify-center">
+    <div class="w-full h-[100vh] overflow-hidden flex items-center justify-center">
         <img src="@/assets/images/2.jpg" class="w-full h-full absolute -z-10 blur-sm" alt="">
         <div class="w-2/5 bg-white shadow-2xl rounded-sm p-6">
             <p class="text-3xl font-bold text-gray-800 text-center mb-6">Hush kelibsiz🎉</p>
@@ -13,7 +13,7 @@
                 </el-form-item>
 
             </el-form>
-            <el-button type="primary" @click="login"
+            <el-button type="primary" @click="login" :loading="loading"
                        class="w-full mt-4 hover:!bg-white hover:!text-cyan-500 !font-semibold !bg-cyan-500
                             !border-cyan-500 active:!text-white active:!bg-cyan-500"
             >Kirish</el-button>
