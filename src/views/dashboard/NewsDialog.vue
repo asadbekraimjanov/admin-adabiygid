@@ -18,7 +18,7 @@
                 </div>
                 <div class="w-full p-2 flex items-center justify-between">
                     <div class="w-1/2">
-                        <el-form-item prop="orderDetail" label="Tartibi" label-position="left">
+                        <el-form-item :prop="{reqired: true}" label="Tartibi" label-position="left">
                             <el-input v-model="formData.newsDetails[idx].orderDetail" @change="onOrderDetailChange(idx)" type="number" placeholder="Tartibi" />
                         </el-form-item>
                         <el-form-item prop="description" label="Tavsif" label-position="left">
@@ -26,11 +26,10 @@
                         </el-form-item>
                     </div>
                     <div class="w-1/2 flex items-center justify-end">
-                        <el-form-item>
-                            <el-upload list-type="picture-card" :on-remove="(file) => handleRemove(file, idx)"
+                        <el-form-item prop="attachment">
+                            <el-upload list-type="picture-card" :on-remove="(file) => handleRemove(file, idx)"  :before-upload="(file) => beforeUpload(file, idx)"
                                        :http-request="(options) => uploadFile(options, idx)" :file-list="item.fileList" :limit="1">
                                 <el-icon><Plus /></el-icon>
-
                             </el-upload>
                         </el-form-item>
                     </div>
@@ -39,7 +38,9 @@
         </el-form>
 
         <div class="w-full flex justify-end items-center mt-4">
-            <el-button type="primary" class="!bg-[#00345b] active:!bg-[#0163ACFF] !border-[#00345b] active:!border-[#0163ACFF]">Saqlash</el-button>
+            <el-button type="primary" @click="save"
+                       class="!bg-[#00345b] active:!bg-[#0163ACFF] !border-[#00345b] active:!border-[#0163ACFF]"
+            >Saqlash</el-button>
             <el-button type="danger">Bekor qilish</el-button>
         </div>
     </el-dialog>
@@ -50,6 +51,7 @@ import {computed, ref} from "vue"
 import {Delete, Plus} from "@element-plus/icons-vue";
 import store from "@/store/store.js";
 import axios from "axios";
+import {ElMessage} from "element-plus";
 
 const visible = ref(false)
 const formRef = ref(null)
@@ -77,6 +79,9 @@ const rules = {
     description: [
         {required: true, message: 'Tavsif kiritilishi shart', trigger: 'change'}
     ],
+    attachment: [
+        {required: true, message: 'Rasm/video kiritilishi shart', trigger: 'change'}
+    ],
 }
 
 const open = () => {
@@ -92,6 +97,16 @@ const onDetailAdded = () => {
         fileList: []
     })
 }
+
+const beforeUpload = (file, idx) => {
+    const item = formData.value.newsDetails[idx];
+
+    if (item.fileList.length >= 1) {
+        ElMessage.warning('Faqat 1 ta fayl yuklash mumkin!');
+        return false;
+    }
+    return true;
+};
 
 const handleRemove = async (file, idx) => {
     await axios.delete(`https://api.adabiygid.uz/api/attachment/${formData.value.newsDetails[idx].attachmentId}`, {
