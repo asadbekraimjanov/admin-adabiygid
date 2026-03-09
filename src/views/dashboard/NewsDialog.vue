@@ -28,7 +28,7 @@
                     <div class="w-1/2 flex items-center justify-end">
                         <el-form-item>
                             <el-upload list-type="picture-card"
-                                       :http-request="(options) => uploadFile(options, idx)" :file-list="fileList" :limit="1">
+                                       :http-request="(options) => uploadFile(options, idx)" :file-list="item.fileList" :limit="1">
                                 <el-icon><Plus /></el-icon>
 
                             </el-upload>
@@ -56,7 +56,8 @@ const formData = ref({
             localDateTime: new Date().toISOString(),
             orderDetail: 1,
             attachmentId: null,
-            description: ''
+            description: '',
+            fileList: []
         }
     ]
 })
@@ -83,6 +84,7 @@ const onDetailAdded = () => {
         orderDetail: formData.value.newsDetails.length+1,
         attachmentId: null,
         description: '',
+        fileList: []
     })
 }
 
@@ -104,7 +106,11 @@ const uploadFile = async ({ file, onSuccess, onError }, idx) => {
         formData.value.newsDetails[idx].attachmentId = res.data;
 
         // 👇 preview ko‘rinishi uchun
-        fileList.value = [{
+        // fileList.value = [{
+        //     name: file.name,
+        //     url: URL.createObjectURL(file)
+        // }];
+        formData.value.newsDetails[idx].fileList = [{
             name: file.name,
             url: URL.createObjectURL(file)
         }];
