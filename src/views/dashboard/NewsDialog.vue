@@ -27,7 +27,7 @@
                     </div>
                     <div class="w-1/2 flex items-center justify-end">
                         <el-form-item>
-                            <el-upload list-type="picture-card"
+                            <el-upload list-type="picture-card" :on-remove="(file) => handleRemove(file, idx)"
                                        :http-request="(options) => uploadFile(options, idx)" :file-list="item.fileList" :limit="1">
                                 <el-icon><Plus /></el-icon>
 
@@ -37,6 +37,11 @@
                 </div>
             </fieldset>
         </el-form>
+
+        <div class="w-full flex justify-end items-center mt-4">
+            <el-button type="primary" class="!bg-[#00345b] active:!bg-[#0163ACFF] !border-[#00345b] active:!border-[#0163ACFF]">Saqlash</el-button>
+            <el-button type="danger">Bekor qilish</el-button>
+        </div>
     </el-dialog>
 </template>
 
@@ -88,6 +93,17 @@ const onDetailAdded = () => {
     })
 }
 
+const handleRemove = async (file, idx) => {
+    await axios.delete(`https://api.adabiygid.uz/api/attachment/${formData.value.newsDetails[idx].attachmentId}`, {
+        headers: {
+            Authorization: `Bearer ${store.state.token || localStorage.getItem("token")}`
+        }
+    })
+    formData.value.newsDetails[idx].fileList = []
+    formData.value.newsDetails[idx].attachmentId = null
+
+}
+
 const uploadFile = async ({ file, onSuccess, onError }, idx) => {
     try {
         const form = new FormData();
@@ -103,13 +119,7 @@ const uploadFile = async ({ file, onSuccess, onError }, idx) => {
             }
         );
 
-        formData.value.newsDetails[idx].attachmentId = res.data;
-
-        // 👇 preview ko‘rinishi uchun
-        // fileList.value = [{
-        //     name: file.name,
-        //     url: URL.createObjectURL(file)
-        // }];
+        formData.value.newsDetails[idx].attachmentId = res.data.id;
         formData.value.newsDetails[idx].fileList = [{
             name: file.name,
             url: URL.createObjectURL(file)
