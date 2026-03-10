@@ -6,7 +6,7 @@
             <el-button @click="logout" class="!font-semibold text-gray-800" :icon="Right">Chiqish</el-button>
         </div>
         <el-button @click="openNewsDialog(null)" type="primary" :icon="Plus" class="w-28 ml-40 mt-6">Qo'shish</el-button>
-        <div v-loading="loading" class="w-full h-[calc(100vh-150px)] overflow-y-auto mt-4 py-2 px-40 flex flex-col justify-between gap-4">
+        <div v-loading="loading" class="w-full max-h-[calc(100vh-150px)] overflow-y-auto mt-4 py-2 px-40 flex flex-col justify-between gap-4">
             <div v-for="(item, idx) in newsData"
                  class="w-full flex justify-between items-center border border-slate-300 shadow-md p-3 rounded text-lg hover:!shadow-lg transition-all">
                 <div class="flex gap-4 items-center">
