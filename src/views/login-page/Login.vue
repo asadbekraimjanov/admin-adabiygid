@@ -30,8 +30,8 @@ import store from "@/store/store.js";
 import router from "@/router/index.js";
 
 const formData = ref({
-    email: 'admin@gmail.com',
-    password: 'localAdmin',
+    email: '',
+    password: '',
 })
 const loading = ref(false);
 

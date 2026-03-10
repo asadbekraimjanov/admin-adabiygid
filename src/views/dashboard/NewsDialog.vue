@@ -1,5 +1,5 @@
 <template>
-    <el-dialog v-model="visible" title="Yangilik qo'shish" width="50%">
+    <el-dialog v-model="visible" title="Yangilik qo'shish" width="50%" @close="close">
         <el-form :model="formData" :rules="rules" ref="formRef" label-position="top">
             <el-form-item label="Yangilik nomi" prop="title">
                 <el-input v-model="formData.title" placeholder="Yangilik nomi"/>
@@ -14,19 +14,19 @@
                 <div class="absolute right-2 -top-8 px-1.5 bg-white">
                     <el-button circle :icon="Plus" type="primary" @click="onDetailAdded"
                                class="!bg-[#00345b] active:!bg-[#0163ACFF] !border-[#00345b] active:!border-[#0163ACFF]" />
-                    <el-button circle :icon="Delete" type="danger"></el-button>
+                    <el-button @click="removeNewsDetail(idx)" circle :icon="Delete" type="danger" :disabled="formData.newsDetails.length < 2"></el-button>
                 </div>
                 <div class="w-full p-2 flex items-center justify-between">
                     <div class="w-1/2">
-                        <el-form-item :prop="{reqired: true}" label="Tartibi" label-position="left">
+                        <el-form-item :prop="'newsDetails.' + idx + '.orderDetail'" label="Tartibi" label-position="left">
                             <el-input v-model="formData.newsDetails[idx].orderDetail" @change="onOrderDetailChange(idx)" type="number" placeholder="Tartibi" />
                         </el-form-item>
-                        <el-form-item prop="description" label="Tavsif" label-position="left">
+                        <el-form-item :prop="'newsDetails.' + idx + '.description'" label="Tavsif" label-position="left">
                             <el-input v-model="formData.newsDetails[idx].description" @change="onOrderDetailChange(idx)" placeholder="Batafsil..." clearable />
                         </el-form-item>
                     </div>
                     <div class="w-1/2 flex items-center justify-end">
-                        <el-form-item prop="attachment">
+                        <el-form-item :prop="'newsDetails.' + idx + '.attachmentId'">
                             <el-upload list-type="picture-card" :on-remove="(file) => handleRemove(file, idx)"  :before-upload="(file) => beforeUpload(file, idx)"
                                        :http-request="(options) => uploadFile(options, idx)" :file-list="item.fileList" :limit="1">
                                 <el-icon><Plus /></el-icon>
@@ -38,24 +38,24 @@
         </el-form>
 
         <div class="w-full flex justify-end items-center mt-4">
-            <el-button type="primary" @click="save"
-                       class="!bg-[#00345b] active:!bg-[#0163ACFF] !border-[#00345b] active:!border-[#0163ACFF]"
-            >Saqlash</el-button>
-            <el-button type="danger">Bekor qilish</el-button>
+            <el-button type="danger" @click="close">Bekor qilish</el-button>
+            <el-button type="primary" @click="save" :loading="loadingUploadFile"
+                       class="!bg-[#00345b] active:!bg-[#0163ACFF] !border-[#00345b] active:!border-[#0163ACFF]">Saqlash</el-button>
         </div>
     </el-dialog>
 </template>
 
 <script setup>
 import {computed, ref} from "vue"
-import {Delete, Plus} from "@element-plus/icons-vue";
+import {CloseBold, Delete, Plus} from "@element-plus/icons-vue";
 import store from "@/store/store.js";
 import axios from "axios";
 import {ElMessage} from "element-plus";
 
 const visible = ref(false)
+const methodPut = ref(false)
+const loadingUploadFile = ref(false)
 const formRef = ref(null)
-const fileList = ref([])
 const formData = ref({
     title: '',
     newsDetails: [
@@ -68,23 +68,28 @@ const formData = ref({
         }
     ]
 })
+const emit = defineEmits(['saved'])
 
 const rules = {
     title: [
-        {required: true, message: 'Yangilik nomi kiritilishi shart', trigger: 'blur'}
+        { required: true, message: "Yangilik nomi kiritilishi shart", trigger: "blur" }
     ],
-    orderDetail: [
-        {required: true, message: 'Tartib raqami kiritilishi shart', trigger: 'change'}
+
+    "newsDetails.0.orderDetail": [
+        { required: true, message: "Tartib raqami kiritilishi shart", trigger: "change" }
     ],
-    description: [
-        {required: true, message: 'Tavsif kiritilishi shart', trigger: 'change'}
+
+    "newsDetails.0.description": [
+        { required: true, message: "Tavsif kiritilishi shart", trigger: "change" }
     ],
-    attachment: [
-        {required: true, message: 'Rasm/video kiritilishi shart', trigger: 'change'}
-    ],
+
+    'newsDetails.0.attachmentId': [
+        { required: true, message: "Rasm/video kiritilishi shart", trigger: "change" }
+    ]
 }
 
-const open = () => {
+const open = (item) => {
+    if (item) formData.value = item
     visible.value = true
 }
 
@@ -98,6 +103,10 @@ const onDetailAdded = () => {
     })
 }
 
+const removeNewsDetail = (idx) => {
+    formData.value.newsDetails.splice(idx, 1)
+}
+
 const beforeUpload = (file, idx) => {
     const item = formData.value.newsDetails[idx];
 
@@ -108,18 +117,24 @@ const beforeUpload = (file, idx) => {
     return true;
 };
 
-const handleRemove = async (file, idx) => {
-    await axios.delete(`https://api.adabiygid.uz/api/attachment/${formData.value.newsDetails[idx].attachmentId}`, {
+const handleRemove = (file, idx) => {
+    loadingUploadFile.value = true
+    axios.delete(`https://api.adabiygid.uz/api/attachment/${formData.value.newsDetails[idx].attachmentId || formData.value.id}`, {
         headers: {
             Authorization: `Bearer ${store.state.token || localStorage.getItem("token")}`
         }
+    }).then(() => {
+        formData.value.newsDetails[idx].fileList = []
+        formData.value.newsDetails[idx].attachmentId = null
+        ElMessage.success('Muvaffaqiyatli o\'chirildi')
+    }).catch(() => {ElMessage.error('Xatolik yuz berdi!')}).finally(() => {
+        loadingUploadFile.value = false
     })
-    formData.value.newsDetails[idx].fileList = []
-    formData.value.newsDetails[idx].attachmentId = null
 
 }
 
 const uploadFile = async ({ file, onSuccess, onError }, idx) => {
+    loadingUploadFile.value = true
     try {
         const form = new FormData();
         form.append('file', file);
@@ -144,18 +159,66 @@ const uploadFile = async ({ file, onSuccess, onError }, idx) => {
 
     } catch (err) {
         onError(err, file);
+    } finally {
+        loadingUploadFile.value = false
     }
 };
 
-const save = () => {
-    formRef.value.validate((valid) => {
+const save = async () => {
+    loadingUploadFile.value = true
+    await formRef.value.validate((valid) => {
         if (valid) {
-            console.log('Form submitted:', formData.value)
+            if (formData.value.id) {
+                axios.put(`https://api.adabiygid.uz/api/news/${formData.value.id}`, {
+                    title: formData.value.title,
+                    newsDetails: formData.value.newsDetails.map(({fileList, ...rest}) => rest)
+                }, {
+                    headers: {
+                        Authorization: `Bearer ${store.state.token || localStorage.getItem("token")}`
+                    }
+                }).then(() => {
+                    ElMessage.success('Muvaffaqiyatli o\'zgartirildi')
+                    emit('saved')
+                }).catch(() => ElMessage.error('Xatolik yuz berdi!')).finally(() => {
+                    loadingUploadFile.value = false
+                    close()
+                })
+            } else {
+                axios.post('https://api.adabiygid.uz/api/news', {
+                    title: formData.value.title,
+                    newsDetails: formData.value.newsDetails.map(({fileList, ...rest}) => rest)
+                }, {
+                    headers: {
+                        Authorization: `Bearer ${store.state.token || localStorage.getItem("token")}`
+                    }
+                }).then(() => {
+                    ElMessage.success('Muvaffaqiyatli qo\'shildi')
+                    emit('saved')
+                }).catch(() => ElMessage.error('Xatolik yuz berdi!')).finally(() => {
+                    loadingUploadFile.value = false
+                    close()
+                })
+            }
         } else {
-            console.log('Form validation failed')
             return false
         }
     })
+}
+
+const close = () => {
+    formData.value = {
+        title: '',
+        newsDetails: [
+            {
+                localDateTime: new Date().toISOString(),
+                orderDetail: 1,
+                attachmentId: null,
+                description: '',
+                fileList: []
+            }
+        ]
+    }
+    visible.value = false
 }
 
 const onOrderDetailChange = (idx) => {
