@@ -1,5 +1,5 @@
 <template>
-    <el-dialog v-model="visible" title="Yangilik qo'shish" width="50%" @close="close">
+    <el-dialog v-model="visible" title="Yangilik qo'shish" width="70%" @close="close">
         <el-form :model="formData" :rules="rules" ref="formRef" label-position="top">
             <el-form-item label="Yangilik nomi" prop="title">
                 <el-input v-model="formData.title" placeholder="Yangilik nomi"/>
@@ -17,15 +17,15 @@
                     <el-button @click="removeNewsDetail(idx)" circle :icon="Delete" type="danger" :disabled="formData.newsDetails.length < 2"></el-button>
                 </div>
                 <div class="w-full p-2 flex items-center justify-between">
-                    <div class="w-1/2">
+                    <div class="w-[60%]">
                         <el-form-item :prop="'newsDetails.' + idx + '.orderDetail'" label="Tartibi" label-position="left">
                             <el-input v-model="formData.newsDetails[idx].orderDetail" @change="onOrderDetailChange(idx)" type="number" placeholder="Tartibi" />
                         </el-form-item>
                         <el-form-item :prop="'newsDetails.' + idx + '.description'" label="Tavsif" label-position="left">
-                            <el-input v-model="formData.newsDetails[idx].description" @change="onOrderDetailChange(idx)" placeholder="Batafsil..." clearable />
+                            <el-input v-model="formData.newsDetails[idx].description" @change="onOrderDetailChange(idx)" type="textarea" :rows="7" placeholder="Batafsil..." clearable />
                         </el-form-item>
                     </div>
-                    <div class="w-1/2 flex items-center justify-end">
+                    <div class="w-[40%] flex items-center justify-end">
                         <el-form-item :prop="'newsDetails.' + idx + '.attachmentId'">
                             <el-upload list-type="picture-card" :on-remove="(file) => handleRemove(file, idx)"  :before-upload="(file) => beforeUpload(file, idx)"
                                        :http-request="(options) => uploadFile(options, idx)" :file-list="item.fileList" :limit="1">
