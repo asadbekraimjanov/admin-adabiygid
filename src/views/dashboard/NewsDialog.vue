@@ -27,7 +27,7 @@
                             <el-col :span="13">
                                 <el-form-item :prop="'newsDetails.' + idx + '.localDateTime'" label="Sana va vaqt" label-position="left">
                                     <el-date-picker @change="localDateTimeChanged(idx)" v-model="formData.newsDetails[idx].localDateTime" placeholder="Sana va vaqtni kiriting"
-                                                    value-format="YYYY-MM-DDTHH:mm:ss" type="datetime" class="!w-full" clearable></el-date-picker>
+                                                    value-format="YYYY-MM-DDTHH:mm:ss" type="datetime" format="DD.MM.YYYY HH:mm" class="!w-full" clearable></el-date-picker>
                                 </el-form-item>
                             </el-col>
                         </el-row>
